@@ -6,7 +6,7 @@ A high-concurrency inference serving system that uses asynchronous request queue
 
 DBIE implements the core scheduling and execution layer found in production inference servers. It demonstrates how to transform independent, one-at-a-time inference requests into efficiently batched GPU/CPU workloads using an async producer-consumer architecture with pluggable scheduling strategies.
 
-> **Interactive Project Guide:** For a polished visual walkthrough of the architecture, request lifecycle, scheduler design, and systems decisions, open the **[Project Showcase Page]([docs/index.html](https://dynamic-batching-inference-engine.vercel.app))**. It presents the same technical content in a clean, navigable format that is especially helpful for understanding the system at a glance.
+> **Interactive Project Guide:** For a polished visual walkthrough of the architecture, request lifecycle, scheduler design, and systems decisions, open the **[Project Showcase Page]([https://dynamic-batching-inference-engine.vercel.app])**. It presents the same technical content in a clean, navigable format that is especially helpful for understanding the system at a glance.
 
 ---
 
