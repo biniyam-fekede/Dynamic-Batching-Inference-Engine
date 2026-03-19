@@ -473,15 +473,27 @@
           request queueing and dynamic batching to maximize throughput while
           preserving low tail latency.
         </p>
-        <div style="margin-bottom: 28px;">
-          <a href="https://github.com/biniyam-fekede/Dynamic-Batching-Inference-Engine.git"
-             target="_blank" rel="noopener noreferrer"
-             style="display: inline-block; padding: 14px 36px; font-size: 16px; font-weight: 600;
-                    color: #ffffff; background: #238636; border: 1px solid rgba(63, 185, 80, 0.4);
-                    border-radius: 8px; text-decoration: none; font-family: var(--font-sans);
-                    transition: background 0.2s ease;"
-             onmouseover="this.style.background='#2ea043'"
-             onmouseout="this.style.background='#238636'">
+        <div style="margin-bottom: 28px">
+          <a
+            href="https://github.com/biniyam-fekede/Dynamic-Batching-Inference-Engine.git"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="
+              display: inline-block;
+              padding: 14px 36px;
+              font-size: 16px;
+              font-weight: 600;
+              color: #ffffff;
+              background: #238636;
+              border: 1px solid rgba(63, 185, 80, 0.4);
+              border-radius: 8px;
+              text-decoration: none;
+              font-family: var(--font-sans);
+              transition: background 0.2s ease;
+            "
+            onmouseover="this.style.background = '#2ea043'"
+            onmouseout="this.style.background = '#238636'"
+          >
             View on GitHub &rarr;
           </a>
         </div>
@@ -879,31 +891,69 @@ docker compose up inference-cpu</code></pre>
         </p>
 
         <h3>Latency and Throughput Overview</h3>
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin: 16px 0;">
-          <img src="../analysis/benchmark_overview.png" alt="Benchmark Overview" style="width: 100%; border-radius: 6px;" />
+        <div
+          style="
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin: 16px 0;
+          "
+        >
+          <img
+            src="benchmark_overview.png"
+            alt="Benchmark Overview"
+            style="width: 100%; border-radius: 6px"
+          />
         </div>
-        <p style="font-size: 14px; color: var(--text-muted);">
-          Left: P50/P95/P99 latency across load patterns. Right: Achieved throughput.
-          Burst traffic shows highest latencies as the scheduler absorbs spikes into large batches.
-          Ramp achieves highest throughput as gradual load increase fills batches efficiently.
+        <p style="font-size: 14px; color: var(--text-muted)">
+          Left: P50/P95/P99 latency across load patterns. Right: Achieved
+          throughput. Burst traffic shows highest latencies as the scheduler
+          absorbs spikes into large batches. Ramp achieves highest throughput as
+          gradual load increase fills batches efficiently.
         </p>
 
         <h3>Latency Percentile Fan</h3>
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin: 16px 0;">
-          <img src="../analysis/latency_fan.png" alt="Latency Fan" style="width: 100%; border-radius: 6px;" />
+        <div
+          style="
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin: 16px 0;
+          "
+        >
+          <img
+            src="latency_fan.png"
+            alt="Latency Fan"
+            style="width: 100%; border-radius: 6px"
+          />
         </div>
-        <p style="font-size: 14px; color: var(--text-muted);">
-          The fan between P50 and P99 widens under burst and step-function traffic —
-          exactly where the batching tradeoff is most visible.
+        <p style="font-size: 14px; color: var(--text-muted)">
+          The fan between P50 and P99 widens under burst and step-function
+          traffic — exactly where the batching tradeoff is most visible.
         </p>
 
         <h3>Request Success Rate</h3>
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin: 16px 0;">
-          <img src="../analysis/success_rate.png" alt="Success Rate" style="width: 100%; border-radius: 6px;" />
+        <div
+          style="
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin: 16px 0;
+          "
+        >
+          <img
+            src="success_rate.png"
+            alt="Success Rate"
+            style="width: 100%; border-radius: 6px"
+          />
         </div>
-        <p style="font-size: 14px; color: var(--text-muted);">
+        <p style="font-size: 14px; color: var(--text-muted)">
           100% success rate across all patterns (3,463 requests, zero failures).
-          Backpressure (HTTP 429) was not triggered — queue capacity of 1000 was sufficient.
+          Backpressure (HTTP 429) was not triggered — queue capacity of 1000 was
+          sufficient.
         </p>
       </section>
 
@@ -955,7 +1005,10 @@ docker compose up inference-cpu</code></pre>
       <div class="container">
         <p><strong>Dynamic Batching Inference Engine</strong></p>
         <p style="margin-top: 8px">
-          Built by <strong style="color: var(--text-bright);">Biniyam Gebreyohannes</strong>
+          Built by
+          <strong style="color: var(--text-bright)"
+            >Biniyam Gebreyohannes</strong
+          >
           as a systems engineering study in high-concurrency inference serving.
         </p>
       </div>
