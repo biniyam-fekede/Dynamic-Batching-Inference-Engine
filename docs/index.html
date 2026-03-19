@@ -573,17 +573,47 @@
 
         <div class="diagram-container">
           <div class="mermaid">
-            %%{init: {'theme': 'dark'}}%% graph TB subgraph CLIENTS ["CLIENTS"]
-            C1["Client 1"] C2["Client 2"] CN["Client N"] end subgraph API ["API
-            LAYER"] VAL["Validation"] ROC["Request + Future"] BP{"Queue<br />Full?"}
-            R429["429"] end subgraph QUEUE ["QUEUE"] AQ["asyncio.Queue<br />maxsize=1000"]
-            end subgraph SCHED ["SCHEDULER"] FIFO["FIFO"] ADAPT["Adaptive"] end
-            subgraph EXEC ["EXECUTOR"] BB["Batch Builder"] MR["Model Runner"]
-            CPU["CPU"] GPU["GPU"] DEMUX["Demux Results"] end subgraph OBS
-            ["OBSERVABILITY"] MC["Metrics"] HE["/health"] ME["/metrics"] end C1
-            & C2 & CN --> VAL --> ROC --> BP BP -->|yes| R429 BP -->|no| AQ AQ
-            --> FIFO & ADAPT FIFO & ADAPT --> BB --> MR MR --> CPU & GPU CPU &
-            GPU --> DEMUX --> C1 & C2 & CN MR -.-> MC MC --- HE & ME
+%%{init: {'theme': 'dark'}}%%
+graph TB
+  subgraph CLIENTS ["CLIENTS"]
+    C1["Client 1"]
+    C2["Client 2"]
+    CN["Client N"]
+  end
+  subgraph API ["API LAYER"]
+    VAL["Validation"]
+    ROC["Request + Future"]
+    BP{"Queue Full?"}
+    R429["429"]
+  end
+  subgraph QUEUE ["QUEUE"]
+    AQ["asyncio.Queue maxsize=1000"]
+  end
+  subgraph SCHED ["SCHEDULER"]
+    FIFO["FIFO"]
+    ADAPT["Adaptive"]
+  end
+  subgraph EXEC ["EXECUTOR"]
+    BB["Batch Builder"]
+    MR["Model Runner"]
+    CPU["CPU"]
+    GPU["GPU"]
+    DEMUX["Demux Results"]
+  end
+  subgraph OBS ["OBSERVABILITY"]
+    MC["Metrics"]
+    HE["/health"]
+    ME["/metrics"]
+  end
+  C1 & C2 & CN --> VAL --> ROC --> BP
+  BP -->|yes| R429
+  BP -->|no| AQ
+  AQ --> FIFO & ADAPT
+  FIFO & ADAPT --> BB --> MR
+  MR --> CPU & GPU
+  CPU & GPU --> DEMUX --> C1 & C2 & CN
+  MR -.-> MC
+  MC --- HE & ME
           </div>
         </div>
       </section>
