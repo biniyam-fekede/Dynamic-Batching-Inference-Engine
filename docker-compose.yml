@@ -1,0 +1,45 @@
+services:
+  inference-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MAX_BATCH_SIZE=32
+      - MAX_WAIT_MS=50
+      - QUEUE_MAX_SIZE=1000
+      - INFERENCE_DEVICE=cpu
+      - SCHEDULER_STRATEGY=fifo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  inference-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    ports:
+      - "8001:8000"
+    environment:
+      - MAX_BATCH_SIZE=32
+      - MAX_WAIT_MS=50
+      - QUEUE_MAX_SIZE=1000
+      - INFERENCE_DEVICE=cuda:0
+      - SCHEDULER_STRATEGY=fifo
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 3

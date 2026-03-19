@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DBIE — Dynamic Batching Inference Engine</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --surface-raised: #1c2129;
+        --border: #30363d;
+        --border-accent: #4a4a6a;
+        --text: #c9d1d9;
+        --text-muted: #8b949e;
+        --text-bright: #e6edf3;
+        --accent-blue: #58a6ff;
+        --accent-green: #3fb950;
+        --accent-orange: #d29922;
+        --accent-red: #f85149;
+        --accent-purple: #bc8cff;
+        --code-bg: #1a1f27;
+        --font-mono:
+          "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+        --font-sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      /* Hero */
+      .hero {
+        padding: 80px 0 60px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .hero-label {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--accent-green);
+        background: rgba(63, 185, 80, 0.1);
+        border: 1px solid rgba(63, 185, 80, 0.3);
+        padding: 4px 14px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        letter-spacing: 0.5px;
+      }
+
+      .hero h1 {
+        font-size: 42px;
+        font-weight: 700;
+        color: var(--text-bright);
+        letter-spacing: -0.5px;
+        margin-bottom: 16px;
+      }
+
+      .hero h1 span {
+        color: var(--accent-blue);
+      }
+
+      .hero-desc {
+        font-size: 18px;
+        color: var(--text-muted);
+        max-width: 640px;
+        margin: 0 auto 32px;
+      }
+
+      .hero-tags {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .tag {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        background: var(--surface);
+      }
+
+      /* Sections */
+      section {
+        padding: 60px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      section:last-of-type {
+        border-bottom: none;
+      }
+
+      h2 {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--text-bright);
+        margin-bottom: 12px;
+        letter-spacing: -0.3px;
+      }
+
+      h2 .num {
+        color: var(--accent-blue);
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: 20px;
+        margin-right: 6px;
+      }
+
+      h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-bright);
+        margin: 32px 0 12px;
+      }
+
+      p {
+        margin-bottom: 16px;
+        color: var(--text);
+      }
+
+      .lead {
+        font-size: 17px;
+        color: var(--text-muted);
+        margin-bottom: 24px;
+      }
+
+      /* Callout */
+      .callout {
+        background: var(--surface);
+        border-left: 3px solid var(--accent-orange);
+        padding: 16px 20px;
+        margin: 24px 0;
+        border-radius: 0 8px 8px 0;
+        font-size: 15px;
+      }
+
+      .callout strong {
+        color: var(--text-bright);
+      }
+
+      /* Pipeline */
+      .pipeline {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2px;
+        margin: 32px 0;
+        background: var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .pipeline-stage {
+        padding: 24px 16px;
+        text-align: center;
+        background: var(--surface);
+        position: relative;
+      }
+
+      .pipeline-stage .stage-icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      .pipeline-stage .stage-label {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-bright);
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .pipeline-stage .stage-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.4;
+      }
+
+      .pipeline-stage:nth-child(1) {
+        border-top: 3px solid var(--accent-blue);
+      }
+      .pipeline-stage:nth-child(2) {
+        border-top: 3px solid var(--accent-orange);
+      }
+      .pipeline-stage:nth-child(3) {
+        border-top: 3px solid var(--accent-green);
+      }
+      .pipeline-stage:nth-child(4) {
+        border-top: 3px solid var(--accent-red);
+      }
+
+      /* Feature grid */
+      .features {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin: 24px 0;
+      }
+
+      .feature {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px;
+      }
+
+      .feature-title {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--accent-blue);
+        margin-bottom: 6px;
+      }
+
+      .feature p {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 0;
+        line-height: 1.5;
+      }
+
+      /* Lifecycle steps */
+      .lifecycle {
+        position: relative;
+        margin: 32px 0;
+        padding-left: 32px;
+      }
+
+      .lifecycle::before {
+        content: "";
+        position: absolute;
+        left: 11px;
+        top: 8px;
+        bottom: 8px;
+        width: 2px;
+        background: var(--border);
+      }
+
+      .lifecycle-step {
+        position: relative;
+        margin-bottom: 20px;
+        padding-left: 24px;
+      }
+
+      .lifecycle-step::before {
+        content: "";
+        position: absolute;
+        left: -25px;
+        top: 8px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--surface);
+        border: 2px solid var(--accent-blue);
+      }
+
+      .lifecycle-step .step-num {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--accent-blue);
+        font-weight: 600;
+      }
+
+      .lifecycle-step .step-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-bright);
+        margin: 2px 0 4px;
+      }
+
+      .lifecycle-step .step-desc {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* Scheduler comparison */
+      .scheduler-compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin: 24px 0;
+      }
+
+      .scheduler-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 24px;
+      }
+
+      .scheduler-card h4 {
+        font-family: var(--font-mono);
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+
+      .scheduler-card:first-child h4 {
+        color: var(--accent-blue);
+      }
+      .scheduler-card:last-child h4 {
+        color: var(--accent-green);
+      }
+
+      .scheduler-card ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .scheduler-card li {
+        font-size: 14px;
+        color: var(--text-muted);
+        padding: 4px 0;
+        padding-left: 16px;
+        position: relative;
+      }
+
+      .scheduler-card li::before {
+        content: ">";
+        position: absolute;
+        left: 0;
+        color: var(--border-accent);
+        font-family: var(--font-mono);
+      }
+
+      /* Systems table */
+      .systems-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 24px 0;
+        font-size: 14px;
+      }
+
+      .systems-table th {
+        text-align: left;
+        padding: 12px 16px;
+        background: var(--surface);
+        color: var(--text-bright);
+        font-weight: 600;
+        border-bottom: 2px solid var(--border);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .systems-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+      }
+
+      .systems-table td:first-child {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--accent-orange);
+        white-space: nowrap;
+      }
+
+      .systems-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* Diagram container */
+      .diagram-container {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 32px 24px;
+        margin: 24px 0;
+        overflow-x: auto;
+      }
+
+      .diagram-container .mermaid {
+        display: flex;
+        justify-content: center;
+      }
+
+      /* Code block */
+      code {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        background: var(--code-bg);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: var(--accent-blue);
+      }
+
+      pre {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px;
+        overflow-x: auto;
+        margin: 16px 0;
+      }
+
+      pre code {
+        background: none;
+        padding: 0;
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* Footer */
+      footer {
+        padding: 48px 0;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+
+      footer a {
+        color: var(--accent-blue);
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      /* Responsive */
+      @media (max-width: 640px) {
+        .hero h1 {
+          font-size: 28px;
+        }
+        .pipeline {
+          grid-template-columns: 1fr;
+        }
+        .features {
+          grid-template-columns: 1fr;
+        }
+        .scheduler-compare {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Hero -->
+      <header class="hero">
+        <span class="hero-label">Author - Biniyam Gebreyohannes</span>
+        <h1>Dynamic Batching<br /><span>Inference Engine</span></h1>
+        <p class="hero-desc">
+          A high-concurrency inference serving system that uses asynchronous
+          request queueing and dynamic batching to maximize throughput while
+          preserving low tail latency.
+        </p>
+        <div style="margin-bottom: 28px;">
+          <a href="https://github.com/biniyam-fekede/Dynamic-Batching-Inference-Engine.git"
+             target="_blank" rel="noopener noreferrer"
+             style="display: inline-block; padding: 14px 36px; font-size: 16px; font-weight: 600;
+                    color: #ffffff; background: #238636; border: 1px solid rgba(63, 185, 80, 0.4);
+                    border-radius: 8px; text-decoration: none; font-family: var(--font-sans);
+                    transition: background 0.2s ease;"
+             onmouseover="this.style.background='#2ea043'"
+             onmouseout="this.style.background='#238636'">
+            View on GitHub &rarr;
+          </a>
+        </div>
+        <div class="hero-tags">
+          <span class="tag">async producer-consumer</span>
+          <span class="tag">dynamic batching</span>
+          <span class="tag">PyTorch</span>
+          <span class="tag">FastAPI + uvloop</span>
+          <span class="tag">CPU / GPU</span>
+          <span class="tag">Docker</span>
+        </div>
+      </header>
+
+      <!-- Problem -->
+      <section>
+        <h2><span class="num">01</span> The Problem</h2>
+        <p class="lead">
+          Naive inference serving — one request in, one forward pass out —
+          wastes compute. Accelerators perform dramatically better on batched
+          workloads. But batching means waiting, and waiting means latency.
+        </p>
+        <p>
+          Under bursty traffic, an inference system must balance hardware
+          utilization against responsiveness. Batch too aggressively and P99
+          latency spikes. Batch too conservatively and the hardware sits idle.
+          DBIE implements the queueing, scheduling, and execution machinery to
+          explore this tradeoff directly.
+        </p>
+        <div class="callout">
+          <strong>The core tension:</strong> Larger batches improve throughput
+          and resource utilization, but increase waiting time and tail latency.
+          Every component in DBIE is built around this tradeoff.
+        </div>
+      </section>
+
+      <!-- Architecture -->
+      <section>
+        <h2><span class="num">02</span> Architecture</h2>
+        <p class="lead">
+          DBIE is a four-stage producer-consumer pipeline. HTTP handlers produce
+          requests. A scheduler forms batches. A runner executes inference.
+          Futures return results.
+        </p>
+
+        <div class="pipeline">
+          <div class="pipeline-stage">
+            <span class="stage-icon">&#9654;</span>
+            <span class="stage-label">Produce</span>
+            <span class="stage-desc"
+              >HTTP handlers validate and enqueue requests into a bounded async
+              queue</span
+            >
+          </div>
+          <div class="pipeline-stage">
+            <span class="stage-icon">&#9881;</span>
+            <span class="stage-label">Schedule</span>
+            <span class="stage-desc"
+              >FIFO or adaptive scheduler decides when to flush a batch</span
+            >
+          </div>
+          <div class="pipeline-stage">
+            <span class="stage-icon">&#9889;</span>
+            <span class="stage-label">Execute</span>
+            <span class="stage-desc"
+              >Model runner processes the batch in a ThreadPoolExecutor</span
+            >
+          </div>
+          <div class="pipeline-stage">
+            <span class="stage-icon">&#8617;</span>
+            <span class="stage-label">Return</span>
+            <span class="stage-desc"
+              >Results demuxed, futures resolved thread-safely on event
+              loop</span
+            >
+          </div>
+        </div>
+
+        <div class="diagram-container">
+          <div class="mermaid">
+            %%{init: {'theme': 'dark'}}%% graph TB subgraph CLIENTS ["CLIENTS"]
+            C1["Client 1"] C2["Client 2"] CN["Client N"] end subgraph API ["API
+            LAYER"] VAL["Validation"] ROC["Request + Future"] BP{"Queue<br />Full?"}
+            R429["429"] end subgraph QUEUE ["QUEUE"] AQ["asyncio.Queue<br />maxsize=1000"]
+            end subgraph SCHED ["SCHEDULER"] FIFO["FIFO"] ADAPT["Adaptive"] end
+            subgraph EXEC ["EXECUTOR"] BB["Batch Builder"] MR["Model Runner"]
+            CPU["CPU"] GPU["GPU"] DEMUX["Demux Results"] end subgraph OBS
+            ["OBSERVABILITY"] MC["Metrics"] HE["/health"] ME["/metrics"] end C1
+            & C2 & CN --> VAL --> ROC --> BP BP -->|yes| R429 BP -->|no| AQ AQ
+            --> FIFO & ADAPT FIFO & ADAPT --> BB --> MR MR --> CPU & GPU CPU &
+            GPU --> DEMUX --> C1 & C2 & CN MR -.-> MC MC --- HE & ME
+          </div>
+        </div>
+      </section>
+
+      <!-- Request Lifecycle -->
+      <section>
+        <h2><span class="num">03</span> Request Lifecycle</h2>
+        <p class="lead">
+          One request, from HTTP ingress through batched inference and back.
+        </p>
+
+        <div class="lifecycle">
+          <div class="lifecycle-step">
+            <span class="step-num">01</span>
+            <div class="step-title">Client sends POST /infer</div>
+            <div class="step-desc">
+              Flat array of floats matching the model's input dimension.
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <span class="step-num">02</span>
+            <div class="step-title">Payload validation</div>
+            <div class="step-desc">
+              Dimension mismatch returns 422 immediately. No queue space wasted.
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <span class="step-num">03</span>
+            <div class="step-title">Request object creation</div>
+            <div class="step-desc">
+              UUID, monotonic timestamp, tensor payload, and an
+              <code>asyncio.Future</code> for result delivery.
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <span class="step-num">04</span>
+            <div class="step-title">Queue insertion</div>
+            <div class="step-desc">
+              <code>put_nowait()</code> into bounded queue. Full queue = HTTP
+              429. Never blocks.
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <span class="step-num">05</span>
+            <div class="step-title">Scheduler forms batch</div>
+            <div class="step-desc">
+              Waits for deadline (anchored to head request arrival time), then
+              drains queue.
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <span class="step-num">06</span>
+            <div class="step-title">Batch assembly</div>
+            <div class="step-desc">
+              <code>torch.stack()</code> combines payloads. Shape mismatch
+              resolves all futures with error.
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <span class="step-num">07</span>
+            <div class="step-title">Executor dispatch</div>
+            <div class="step-desc">
+              <code>run_in_executor()</code> moves blocking inference to a
+              thread. Event loop stays free.
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <span class="step-num">08</span>
+            <div class="step-title">Model forward pass</div>
+            <div class="step-desc">
+              Single batched inference. CUDA sync on GPU path.
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <span class="step-num">09</span>
+            <div class="step-title">Result demux + future resolution</div>
+            <div class="step-desc">
+              <code>outputs[i]</code> delivered via
+              <code>call_soon_threadsafe()</code> to each request's future.
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <span class="step-num">10</span>
+            <div class="step-title">HTTP response</div>
+            <div class="step-desc">
+              Handler awaits future, returns JSON with result and measured
+              latency.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scheduler Design -->
+      <section>
+        <h2><span class="num">04</span> Scheduler Design</h2>
+        <p class="lead">
+          The scheduler answers one question: when should I stop waiting and
+          flush the current batch?
+        </p>
+
+        <div class="scheduler-compare">
+          <div class="scheduler-card">
+            <h4>FIFO Scheduler</h4>
+            <ul>
+              <li>Fixed batch size and wait timeout</li>
+              <li>Deadline anchored to oldest request arrival</li>
+              <li>Simple, predictable baseline strategy</li>
+              <li>Works well under steady-state load</li>
+              <li>Cannot adapt to traffic changes</li>
+            </ul>
+          </div>
+          <div class="scheduler-card">
+            <h4>Adaptive Scheduler</h4>
+            <ul>
+              <li>EMA of queue depth and inter-arrival time</li>
+              <li>Dynamically adjusts batch size + wait window</li>
+              <li>Reduces batch under P99 latency pressure</li>
+              <li>Hysteresis prevents oscillation (N signals)</li>
+              <li>Grows batches under bursty traffic</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Systems Decisions -->
+      <section>
+        <h2><span class="num">05</span> Systems Decisions</h2>
+
+        <div class="features">
+          <div class="feature">
+            <div class="feature-title">Non-blocking queue insertion</div>
+            <p>
+              Handlers use <code>put_nowait()</code> and return 429 on overflow.
+              Blocking on a full queue would stall the event loop and freeze all
+              in-flight requests.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="feature-title">Executor isolation</div>
+            <p>
+              PyTorch forward passes are synchronous and CPU-bound.
+              <code>run_in_executor()</code> moves them to a thread so the event
+              loop can continue accepting requests.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="feature-title">Single executor worker</div>
+            <p>
+              Multiple threads cause OpenMP/MKL over-subscription. A single
+              worker avoids context switching overhead and gets cleaner
+              throughput.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="feature-title">Thread-safe future resolution</div>
+            <p>
+              <code>Future.set_result()</code> from an executor thread is unsafe
+              in Python 3.10+. <code>call_soon_threadsafe()</code> schedules
+              resolution on the event loop thread.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="feature-title">Single ASGI worker</div>
+            <p>
+              Multiple uvicorn workers split traffic across independent queues
+              and models, destroying batching efficiency. DBIE runs one worker
+              by design.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="feature-title">Timeout on futures</div>
+            <p>
+              <code>asyncio.wait_for()</code> bounds how long a handler waits.
+              Prevents memory leaks from disconnected clients whose futures
+              would never be read.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Failure Modes -->
+      <section>
+        <h2><span class="num">06</span> Failure Modes</h2>
+
+        <table class="systems-table">
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Mitigation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Queue overflow</td>
+              <td>
+                Immediate 429 via non-blocking put. Never stalls the event loop.
+              </td>
+            </tr>
+            <tr>
+              <td>Tensor shape mismatch</td>
+              <td>
+                <code>torch.stack</code> wrapped in try/except. All futures in
+                the batch receive the error.
+              </td>
+            </tr>
+            <tr>
+              <td>Client disconnect</td>
+              <td>
+                Configurable timeout on future await prevents orphaned memory.
+              </td>
+            </tr>
+            <tr>
+              <td>Cold-start latency</td>
+              <td>Warm-up batches run before the server accepts traffic.</td>
+            </tr>
+            <tr>
+              <td>Scheduler oscillation</td>
+              <td>
+                Hysteresis requires N consecutive signals before changing batch
+                size.
+              </td>
+            </tr>
+            <tr>
+              <td>Docker health during warmup</td>
+              <td>
+                <code>start_period: 30s</code> prevents kill-restart loops.
+              </td>
+            </tr>
+            <tr>
+              <td>GPU memory fragmentation</td>
+              <td>
+                <code>torch.cuda.empty_cache()</code> called every 100 batches.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Deployment -->
+      <section>
+        <h2><span class="num">07</span> Deployment</h2>
+        <p>
+          Single-process FastAPI on uvicorn. Environment-variable-driven
+          configuration. Multi-stage Docker builds for CPU and GPU variants.
+        </p>
+
+        <pre><code># CPU
+python -m dbie
+
+# GPU
+INFERENCE_DEVICE=cuda:0 python -m dbie
+
+# Adaptive scheduler
+SCHEDULER_STRATEGY=adaptive MAX_WAIT_MS=30 python -m dbie
+
+# Docker
+docker compose up inference-cpu</code></pre>
+
+        <table class="systems-table">
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Default</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MAX_BATCH_SIZE</td>
+              <td>32</td>
+            </tr>
+            <tr>
+              <td>MAX_WAIT_MS</td>
+              <td>50</td>
+            </tr>
+            <tr>
+              <td>QUEUE_MAX_SIZE</td>
+              <td>1000</td>
+            </tr>
+            <tr>
+              <td>INFERENCE_DEVICE</td>
+              <td>cpu</td>
+            </tr>
+            <tr>
+              <td>SCHEDULER_STRATEGY</td>
+              <td>fifo</td>
+            </tr>
+            <tr>
+              <td>ADAPTIVE_TARGET_LATENCY_MS</td>
+              <td>100</td>
+            </tr>
+            <tr>
+              <td>WARMUP_BATCHES</td>
+              <td>10</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Benchmark Results -->
+      <section>
+        <h2><span class="num">08</span> Benchmark Results</h2>
+        <p class="lead">
+          Open-loop load testing across four traffic patterns. FIFO scheduler,
+          MAX_BATCH_SIZE=32, MAX_WAIT_MS=50, CPU execution.
+        </p>
+
+        <h3>Latency and Throughput Overview</h3>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin: 16px 0;">
+          <img src="../analysis/benchmark_overview.png" alt="Benchmark Overview" style="width: 100%; border-radius: 6px;" />
+        </div>
+        <p style="font-size: 14px; color: var(--text-muted);">
+          Left: P50/P95/P99 latency across load patterns. Right: Achieved throughput.
+          Burst traffic shows highest latencies as the scheduler absorbs spikes into large batches.
+          Ramp achieves highest throughput as gradual load increase fills batches efficiently.
+        </p>
+
+        <h3>Latency Percentile Fan</h3>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin: 16px 0;">
+          <img src="../analysis/latency_fan.png" alt="Latency Fan" style="width: 100%; border-radius: 6px;" />
+        </div>
+        <p style="font-size: 14px; color: var(--text-muted);">
+          The fan between P50 and P99 widens under burst and step-function traffic —
+          exactly where the batching tradeoff is most visible.
+        </p>
+
+        <h3>Request Success Rate</h3>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin: 16px 0;">
+          <img src="../analysis/success_rate.png" alt="Success Rate" style="width: 100%; border-radius: 6px;" />
+        </div>
+        <p style="font-size: 14px; color: var(--text-muted);">
+          100% success rate across all patterns (3,463 requests, zero failures).
+          Backpressure (HTTP 429) was not triggered — queue capacity of 1000 was sufficient.
+        </p>
+      </section>
+
+      <!-- Why It Matters -->
+      <section>
+        <h2><span class="num">09</span> Why This Matters</h2>
+        <p class="lead">
+          DBIE demonstrates engineering at the intersection of backend systems
+          and ML infrastructure.
+        </p>
+        <div class="features">
+          <div class="feature">
+            <div class="feature-title">Async concurrency</div>
+            <p>
+              Producer-consumer pipeline with futures, executors, and event loop
+              isolation.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="feature-title">Queueing & scheduling</div>
+            <p>
+              Bounded queues, backpressure, two scheduling strategies with
+              different throughput-latency profiles.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="feature-title">Inference systems</div>
+            <p>
+              Batching, warm-up, device management, and practical constraints of
+              serving models.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="feature-title">Production awareness</div>
+            <p>
+              Health checks, timeouts, memory management, graceful shutdown,
+              observability.
+            </p>
+          </div>
+        </div>
+        <p style="margin-top: 16px; color: var(--text-muted)">
+          The same problem space as NVIDIA Triton Inference Server, TensorFlow
+          Serving, and vLLM's scheduling layer.
+        </p>
+      </section>
+    </div>
+
+    <footer>
+      <div class="container">
+        <p><strong>Dynamic Batching Inference Engine</strong></p>
+        <p style="margin-top: 8px">
+          Built by <strong style="color: var(--text-bright);">Biniyam Gebreyohannes</strong>
+          as a systems engineering study in high-concurrency inference serving.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "dark",
+        themeVariables: {
+          darkMode: true,
+          background: "#161b22",
+          primaryColor: "#1a1a2e",
+          primaryTextColor: "#c9d1d9",
+          primaryBorderColor: "#30363d",
+          lineColor: "#7c7caa",
+          secondaryColor: "#16213e",
+          tertiaryColor: "#0f3460",
+        },
+      });
+    </script>
+  </body>
+</html>
